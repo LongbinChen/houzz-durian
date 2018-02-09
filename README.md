@@ -205,6 +205,6 @@ s3cmd --configure
 ```
 
 ### about the authors
-  Durian was created by @lilia when she was an intern at Houzz's research team in Summer 2017. 
+  Durian was created by @lilia when she was an intern at Houzz's research team in Summer 2017. Since then, @longbin, @xinai @yangli all contribute to durian
   
 
