@@ -2,15 +2,11 @@
 
 
 ## Introduction
-Durian is a machine learning platform to facilitate machine learning tasks. It modularizes each machine learning algorithms in to 'modules', which are used to build complicate machine learning training process (pipes). In Pipes, the data are either stored in s3, or in git repos or https URIs.  
+Durian is a machine learning utility tool to facilitate machine learning tasks. It is a dev tool to manage pipe/jobs and it fetches data and module files and execute the modules on server; and store the output on s3 (or other storage space).
 
-
-Durian is a dev tool to manage pipe/jobs and it fetches data and module files and execute the modules on server; and store the output on s3.
-
+It modularizes each machine learning algorithms in to 'modules', which are used to build complicate machine learning training process (pipes). In Pipes, the data are either stored in s3, or in git repos or https URIs. Local file will be supported soon.   
 
 We are working on a Web UI to create/edit/maintain training process and visualize the training process pipes.
-
-
 
 ## Get started
 
@@ -28,7 +24,7 @@ sudo apt-get install python-pip mysql-server python-dev libmysqlclient-dev
 
 ```
 mkdir workspace; cd workspace;
-git clone git@github.com:Houzz/durian.git
+git clone git@github.com:Houzz/houzz-durian.git
 
 ```
 
@@ -115,7 +111,7 @@ Data in Durian has two types, one is external data and one is intermedia data in
 External Data is stored either at s3, or a file at git repo or a file downloadable from internet. Therefore we can represent a data as one of the following three format:
 
 ```
- s3://houzz-search-development/durian/question_topic/test_room_nostopwords
+ s3://path/to/your/s3/file/test_room_nostopwords
  file://text_classification/data/train_data
  http://www.example.com/train.data.tar.gz
 ```
@@ -174,9 +170,9 @@ jobs:
   bow_model:
       module: text_classification/module/bow_model
       input:
-        train_data: s3://houzz-search-development/durian/question_topic/train_questions_room_nostopwords
-        test_data: s3://houzz-search-development/durian/question_topic/test_room_nostopwords
-        category_label: s3://houzz-search-development/durian/question_topic/category_relations
+        train_data: [input your s3 address here]
+        test_data: [input your s3 file address here]
+        category_label: [input your s3 file address here]
       output:
         model: bow_model_model
 ```
@@ -185,7 +181,6 @@ jobs:
 
 
 Internally, we want to avoid duplication of running the example same jobs. In the case that the module's output is deterministic of the input data and parameters (in most case, we can assume that even for random algorithms), we use the hash value of the concatenated string from module_id, md5 of souced_code, input and parameters identify a job. We can create a unique hash for each output data as well using the similar method by adding the output name in computing the hash. 
-
 
 ```
 job_hash = md5 ("\t".join[ module_id + md5(source _code of module), input_list, param_list])
