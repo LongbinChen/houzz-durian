@@ -16,8 +16,15 @@ We are working on a Web UI to create/edit/maintain training process and visualiz
 use sudo apt-get install to install following packages; please don't change the default admin name as root and remmeber the password for root. 
 ```
 sudo apt-get update
-sudo apt-get install python-pip mysql-server python-dev libmysqlclient-dev
+sudo apt-get install python-pip python-dev libmysqlclient-dev
 ```
+
+if you are using mysql as the backend database, you also need to install mysql. By default, durian uses sqlite for simplicity.
+
+```
+sudo apt-get install mysql-server 
+```
+
 
 
 #### clone durian
@@ -57,7 +64,18 @@ dr makemigrations durian
 dr migrate durian
 ```
 
-create a file extra_settings.py if you need to configure your own settings without changing the remote repo. See local_settings_sample.py regarding what you might want to configure.
+
+#### Config
+there are a few import config you need to set up before you can run durian. you can run the following command to view the config views. 
+
+```
+dr config
+```
+
+These are the directory to save intermedia data and download/cached datas. For some experiment, the file size might be very large so make sure you config a large enough directory. 
+
+
+You can create a file 'extra_settings.py' if you need to configure your own settings without changing the remote repo. See local_settings_sample.py regarding what you might want to configure.
 
 ```
 vi django/durian/extra_settings.py
@@ -74,10 +92,10 @@ dr
 ```
 dr listpipe
 ```
-### start a pipe 
+### run a pipe 
 
 ``` 
-dr startpipe text_classification/pipe/bow_model.yaml
+dr runpipe text_classification/pipe/bow_model.yaml
 ``` 
 ### list all the jobs 
 
@@ -90,7 +108,6 @@ dr listjob
 ``` 
 dr runjob --job_id [job_id]
 ``` 
-
 
 
 ## Concepts in Durian
@@ -154,6 +171,8 @@ parameters:
 cmd: python -m text_classification.module.bow_model --num_epochs num_epochs category_label train_data test_data model
 ```
 
+
+
 ### Jobs and Pipe
 
 A job is an instance of module, with inputs and parameters set by the yaml configs. 
@@ -194,7 +213,6 @@ it is usually time consuming to download external data. In Durian, all external 
 
 
 ### Job Scheduling
-
 
 
 ### S3 Setup
