@@ -4,15 +4,15 @@ from __future__ import unicode_literals
 from django.db import models
 from django.contrib.auth.models import User, Group
 
-# Create your models here.
 class Pipe(models.Model):
+    
     CREATED = 'created'
     DONE = 'done'
     PIPE_STATUS = ((CREATED, CREATED), (DONE, DONE))
 
-
-    owner = models.ForeignKey(User, to_field="username")
-    group = models.ForeignKey(Group, to_field="name")
+    #fields
+    owner = models.ForeignKey(User, to_field="username", null=True)
+    group = models.ForeignKey(Group, to_field="name", null=True)
     pipe_name = models.CharField(max_length=255)
     pipe_def = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=255, choices = PIPE_STATUS)
@@ -23,15 +23,19 @@ class Pipe(models.Model):
     featured = models.BooleanField(default=False)
     desc = models.CharField(max_length=2000)
 
-# an atom operation , like executing a script
 class Job(models.Model):
+    '''
+        an atom operation , like executing a script
+    '''
     COMPLETED = "completed"
     CREATED = "created"
     LATCHED = "latched"
     CANCELED = "canceled"
     FAILED = "Failed"
     RUNNING = "Running"
-    JOB_STATUS = ((COMPLETED, COMPLETED), (CREATED, CREATED), (LATCHED, LATCHED), (CANCELED, CANCELED), (FAILED, FAILED), (RUNNING, RUNNING))
+    JOB_STATUS = ((COMPLETED, COMPLETED), (CREATED, CREATED), 
+                  (LATCHED, LATCHED), (CANCELED, CANCELED),
+                  (FAILED, FAILED), (RUNNING, RUNNING))
 
     pipe = models.ForeignKey(Pipe)
     job_name = models.CharField(max_length=255, null=True)

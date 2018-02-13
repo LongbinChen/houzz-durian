@@ -1,6 +1,5 @@
 import argparse
 import gzip
-import numpy
 import os
 import yaml
 import types

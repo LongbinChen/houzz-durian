@@ -1,7 +1,10 @@
 from django.conf.urls import include, url
 from django.contrib import admin
-from views import HomePageView, FormHorizontalView, FormInlineView, PaginationView, FormWithFilesView, DefaultFormView, MiscView, DefaultFormsetView, DefaultFormByFieldView, getmodule
+
 import views
+from views import (DefaultFormByFieldView, DefaultFormsetView, DefaultFormView,
+                   FormHorizontalView, FormInlineView, FormWithFilesView,
+                   HomePageView, MiscView, PaginationView, getmodule)
 
 urlpatterns = [
     url(r'^$', HomePageView.as_view(), name='home'),

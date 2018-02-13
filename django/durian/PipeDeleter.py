@@ -1,13 +1,10 @@
-from durian.models import Pipe, Job, JobDependency, Data
 import os
-from durian.settings import * 
+
+from durian.models import Data, Job, JobDependency, Pipe
+from durian.settings import *
+
 
 class PipeDeleter:
-#    debug = True
-#    def info(self, msg):
-#        if (self.debug):
-#           msg_str = "[Run Pipe] %s"% (msg)
-#           print(msg_str)
 
     def _delete_pipe(self, pipe_id, dry_run = True):
         try:
@@ -74,4 +71,3 @@ class PipeDeleter:
     def run(self):
         print("We will delete the following items")
         self._delete_pipe(self._pipe_id, self._dry_run_only)
-        
