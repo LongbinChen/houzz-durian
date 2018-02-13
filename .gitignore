@@ -1,1 +1,7 @@
 *.pyc
+django/durian/migrations/
+django/db.sqlite3
+venv
+.vscode/
+
+
