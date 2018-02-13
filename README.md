@@ -140,7 +140,7 @@ Intermedia Data are the output for one jobs and will be used as the input of oth
 
 ### Module
 
-A module is a predefined process, wrapped with a yaml file defintion, with specified input/output and command lines to run the module
+A module is a predefined code, wrapped with a yaml file interface definition, with specified input/output and command lines to run the module
 
 ```
 input:
@@ -169,6 +169,14 @@ parameters:
         default: 5
 
 cmd: python -m text_classification.module.bow_model --num_epochs num_epochs category_label train_data test_data model
+```
+
+> If you write your command in python with standard argparser library, we created a command tool for you to create the yaml interface definition file for you. 
+
+For example, 
+
+```
+dr create_yaml $DURIAN/apps/durian/module/upload_to_s3.py
 ```
 
 
