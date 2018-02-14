@@ -89,18 +89,6 @@ class JobRunner:
             return True
         return False
 
-    def _unzip_data(self, zipfilename):
-        dir_path = os.path.dirname(zipfilename)
-        fname = os.path.basename(zipfilename)
-        tmpfile = os.path.join(dir_path, "tmp_" + fname)
-        # step 1. rename to tmp file
-
-        self._run_command("mv %s %s " % (zipfilename, tmpfile))
-        # step 2. create target directory
-        self._run_command("mkdir %s " % (zipfilename))
-        # step 3. unzip
-        self._run_command("tar zxvf %s -C %s --strip-components=1" % (tmpfile, zipfilename))
-
     def _create_working_directory(self):
         if not os.path.exists(self.job_dir):
             os.makedirs(self.job_dir)
@@ -142,9 +130,9 @@ class JobRunner:
             if not os.path.exists(storage_location):
                 print "============="
                 print "[ERROR]"
-                print "It seems the input file '%s', which is linked "
-                print "to %s, doesn't exist. Please make sure the dependent jobs"
-                print "are completed" % (data_name, storage_location)
+                print "It seems the input file '%s', which is linked "%data_name
+                print "to %s, doesn't exist. Please make sure the dependent jobs" % storage_location
+                print "are completed" 
                 self._fail_job()
             symlink_force(storage_location, current_location)
             self.info("%s -> %s " % (data_name, storage_location))
@@ -183,12 +171,10 @@ class JobRunner:
         else:
             self.info("non-local storage hasn't been implemented yet.")
 
-    def _attach_or_copy_source_data(self, inputfile, filemd5, data_key, unzip=False):
+    def _attach_or_copy_source_data(self, inputfile, filemd5, data_key):
         if inputfile.startswith("file://"):
             filename = os.path.join(resource_directory, inputfile.replace("file://", ""))
             symlink_force(filename, os.path.join(self.job_dir, data_key))
-            if unzip:
-                self._unzip_data(os.path.join(self.job_dir, data_hash))
             self.info("%s -> %s" % (data_key, filename))
             return True
 
@@ -198,8 +184,6 @@ class JobRunner:
 
         if not os.path.exists(cached_data_file):
             self._copy_source_data_to_cache(inputfile, filemd5)
-            if unzip:
-                self._unzip_data(cached_data_file)
 
         # create symbolic link
         symlink_force(cached_data_file, os.path.join(self.job_dir, data_key))
@@ -207,9 +191,9 @@ class JobRunner:
 
         return True
 
-    def _prepare_data(self, resource_link, data_name, unzip):
+    def _prepare_data(self, resource_link, data_name):
         if '://' in resource_link:
-            self._attach_or_copy_source_data(resource_link, get_md5(resource_link), data_name, unzip)
+            self._attach_or_copy_source_data(resource_link, get_md5(resource_link), data_name)
         elif resource_link in self.pipe_def["datafile"]:
             self._link_file_from_storage(self.pipe_def["datafile"][resource_link], data_name)
         else:
@@ -221,12 +205,11 @@ class JobRunner:
         self.info("--- Preparing Job Data : %s --- " % (self.job_dir))
         for d, v in self.job_conf["input"].items():
             if not isinstance(v, types.ListType):
-                #self._download_data(v, d, self.job_conf["input"][d].get("unzip", False))
-                self._prepare_data(v, d, self.module["input"][d].get("unzip", False))
+                self._prepare_data(v, d)
             else:
                 for di, dv in enumerate(v):
                     data_name = "%s_%d" % (d, di)
-                    self._prepare_data(dv, data_name, False)
+                    self._prepare_data(dv, data_name)
         print ""
 
     def _copy_output_to_storage(self):
@@ -246,29 +229,50 @@ class JobRunner:
             v = data_name
         return v
 
+    def _create_command_from_template(self, cmd_template):
+        '''
+            produce cmmand line using string formatting. 
+            new format added in v.0.2
+        '''
+        #buildup dictionary
+        cmd_dict = {}
+        for kn in self.job_conf["input"]:
+            cmd_dict[kn] = self.job_conf["input"][kn]
+        for kn in self.job_conf["output"]:
+            cmd_dict[kn] = self.job_conf["output"][kn]
+        for kn in self.job_conf["parameters"]:
+            cmd_dict[kn] = self.job_conf["parameters"][kn]
+        return cmd_template % cmd_dict
+
+    def _create_command(self):
+        cmd_template = self.module.get("cmd", None)
+        flds = cmd_template.split(" ")
+        trans_flds = []
+        for f in flds:
+            if "input" in self.module and f in self.job_conf["input"]:
+                if isinstance(self.job_conf["input"][f], types.ListType):
+                    for fi, fv in enumerate(self.job_conf["input"][f]):
+                        data_name = "%s_%d" % (f, fi)
+                        trans_flds.append(data_name)
+                else:
+                    trans_flds.append(f)
+            elif "output" in self.module and f in self.module["output"]:
+                trans_flds.append(f)
+            elif "parameters" in self.module and f in self.module["parameters"]:
+                trans_flds.append(str(self.job_conf.get("parameters", {}).get(
+                    f, self.module["parameters"][f].get('default', None))))
+            else:
+                trans_flds.append(f)
+        trans_cmd = " ".join(trans_flds)
+        return self._create_command_from_template(trans_cmd)
+
     def run_job(self):
+            
+
         self.current_task = "Run"
         self.output_data_hash = []
         if (run_local):
-            cmd_template = self.module["cmd"]
-            flds = cmd_template.split(" ")
-            trans_flds = []
-            for f in flds:
-                if "input" in self.module and f in self.job_conf["input"]:
-                    if isinstance(self.job_conf["input"][f], types.ListType):
-                        for fi, fv in enumerate(self.job_conf["input"][f]):
-                            data_name = "%s_%d" % (f, fi)
-                            trans_flds.append(data_name)
-                    else:
-                        trans_flds.append(f)
-                elif "output" in self.module and f in self.module["output"]:
-                    trans_flds.append(f)
-                elif "parameters" in self.module and f in self.module["parameters"]:
-                    trans_flds.append(str(self.job_conf.get("parameters", {}).get(
-                        f, self.module["parameters"][f].get('default', None))))
-                else:
-                    trans_flds.append(f)
-            trans_cmd = " ".join(trans_flds)
+            trans_cmd = self._create_command()
             self.info("run command:'%s' at working directory: %s " % (trans_cmd, self.job_dir))
             try:
                 logfile = open(self.run_log_file, 'w')

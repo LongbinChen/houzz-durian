@@ -12,7 +12,6 @@ def make_tarfile(output_filename, source_dir):
     with tarfile.open(output_filename, "w:gz") as tar:
         tar.add(source_dir, arcname=os.path.basename(source_dir))
 
-
 def calculate_md5(fname):
     hash_md5 = hashlib.md5()
     with open(fname, "rb") as f:
@@ -20,10 +19,7 @@ def calculate_md5(fname):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-
-
 def run(args):
-
   if os.path.isdir(args.local_file):
      if args.zip_dir != None:
         if not os.path.exists(args.zip_dir):
@@ -38,7 +34,6 @@ def run(args):
      
      with open(_tmp_file_md5, "w") as fmd5:
         fmd5.write(data_md5)
-     
   
      print "uplaoding % s to %s " % (_tmp_file, args.s3_path)
      os.system("s3cmd put %s %s" % (_tmp_file, args.s3_path))
@@ -50,14 +45,18 @@ def run(args):
      return True
   return False
 
-if __name__ == '__main__':
+def create_parser():
   parser = argparse.ArgumentParser()
-  
-  parser.add_argument( '--zip_dir', dest='zip_dir',  default = None, help='local temp directory to hold the temp zip file, used when large .tar.gz file is created ')
-  parser.add_argument( '--clean', dest='clean',  default = True, action="store_false", help='remove temp file')
-  parser.add_argument( 'local_file', help='the config file')
-  parser.add_argument( 's3_path',  default=None, type=str, help='the s3 location to upload to')
+  parser.add_argument('--zip_dir', dest='zip_dir',  default = None, 
+      help='parameters, local temp directory to hold the temp zip file, used when large .tar.gz file is created ')
+  parser.add_argument('--clean', dest='clean',  default = True, action="store_false", 
+                      help='parameters, remove temp file')
+  parser.add_argument('local_file', help='input, the config file')
+  parser.add_argument('s3_path',  default=None, type=str, help='parameters, the s3 location to upload to')
+  return parser
 
+if __name__ == '__main__':
+  parser = create_parser()
   args = parser.parse_args()
   run(args)
 
