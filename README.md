@@ -106,7 +106,7 @@ dr listjob
 ### run a job 
 
 ``` 
-dr runjob --job_id [job_id]
+dr runjob [job_id]
 ``` 
 
 
