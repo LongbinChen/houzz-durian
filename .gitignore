@@ -3,5 +3,6 @@ django/durian/migrations/
 django/db.sqlite3
 venv
 .vscode/
+extra_settings.py
 
 

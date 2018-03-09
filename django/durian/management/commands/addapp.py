@@ -21,5 +21,8 @@ class Command(BaseCommand):
             app_name = app_path.strip("/").split("/")[-1]
         print "adding app %s to durian as %s, the app path is at %s." % (
                 app_path, app_name, resource_directory)
+        if not os.path.exists(resource_directory):
+           os.makedirs(resource_directory)
         if os.path.exists(app_path):
+            print "creating symlink for %s" % app_path
             os.symlink(app_path, os.path.join(resource_directory, app_name))
